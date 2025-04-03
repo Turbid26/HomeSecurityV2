@@ -43,7 +43,7 @@ def read_serial():
                     "motion": motion
                 })
 
-                print(f"📡 Data sent: Temp={temperature}, Humidity={humidity}, Motion={motion}")
+                print(f"Data sent: Temp={temperature}, Humidity={humidity}, Motion={motion}")
 
         except Exception as e:
             print(f"⚠️ Error: {e}")

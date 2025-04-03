@@ -1,7 +1,6 @@
 from flask import Flask, render_template, jsonify, Response
 import firebase_admin
 from firebase_admin import credentials, db
-import cv2
 
 app = Flask(__name__)
 
@@ -19,20 +18,7 @@ def get_db_reference():
     """Returns Firebase database reference"""
     return db.reference()
 
-
-camera = cv2.VideoCapture(0)  # Open default webcam
-
-def generate_frames():
-    while True:
-        success, frame = camera.read()
-        if not success:
-            break
-        else:
-            _, buffer = cv2.imencode('.jpg', frame)
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
-
-
+@app.route('/')
 @app.route('/live')
 def live_feed():
     """Render Live Feed Page"""
@@ -50,10 +36,25 @@ def live_data():
     else:
         return jsonify({"error": "No data available"}), 404
 
-@app.route('/video_feed')
-def video_feed():
-    """Video streaming route"""
-    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+@app.route('/home_alerts')
+def home_alerts():
+    """Render the Home Alerts page."""
+    return render_template('homealerts.html')
+
+@app.route('/alerts_data')
+def alerts_data():
+    """Fetch sensor data from Firebase to display alerts"""
+    ref = db.reference("sensorData")
+    data = ref.get()
+
+    if data:
+        return jsonify({
+            "motion": data.get("motion", 0),
+            "temperature": data.get("temperature", 0)
+        })
+    else:
+        return jsonify({"error": "No data available"}), 404
+
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -71,6 +71,41 @@
         .yellow { background-color: yellow; }
         .green { background-color: green; }
     </style>
+    <script>
+        async function fetchAlerts() {
+            try {
+                let response = await fetch('/alerts_data');
+                let data = await response.json();
+    
+                let alertContainer = document.querySelector(".alert-container");
+                alertContainer.innerHTML = ""; // Clear old alerts
+    
+                if (data.motion === 1) {
+                    alertContainer.innerHTML += `
+                        <div class="alert-item">
+                            <div class="alert-info"><span class="alert-icon yellow"></span> Motion detected!</div>
+                            <div class="alert-time">${new Date().toLocaleTimeString()}</div>
+                        </div>`;
+                }
+                
+                if (data.temperature > 50) {
+                    alertContainer.innerHTML += `
+                        <div class="alert-item">
+                            <div class="alert-info"><span class="alert-icon red"></span> High temperature alert: ${data.temperature}°C</div>
+                            <div class="alert-time">${new Date().toLocaleTimeString()}</div>
+                        </div>`;
+                }
+                
+                if (alertContainer.innerHTML === "") {
+                    alertContainer.innerHTML = "<p>No recent alerts</p>";
+                }
+            } catch (error) {
+                console.error("Error fetching alerts:", error);
+            }
+        }
+    
+        setInterval(fetchAlerts, 5000); // Fetch alerts every 5 seconds
+    </script>    
 </head>
 <body>
     <nav class="navbar navbar-expand-lg">
@@ -78,7 +113,7 @@
             <a class="navbar-brand text-white" href="#">Home Security</a>
             <div class="collapse navbar-collapse justify-content-center">
                 <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-video"></i> Live Feed</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/"><i class="fas fa-video"></i> Live Feed</a></li>
                     <li class="nav-item"><a class="nav-link active" href="#"><i class="fas fa-bell"></i> Home Alerts</a></li>
                     <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-upload"></i> Upload New</a></li>
                     <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-clock"></i> Recent Activity</a></li>
