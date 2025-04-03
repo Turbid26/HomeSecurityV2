@@ -69,7 +69,7 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {
-                        document.getElementById("status").innerText = "⚠️ No data available";
+                        document.getElementById("status").innerText = " No data available";
                     } else {
                         document.getElementById("temp").innerText = `🌡 Temperature: ${data.temperature}°C`;
                         document.getElementById("humidity").innerText = `💧 Humidity: ${data.humidity}%`;
