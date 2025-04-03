@@ -1,58 +1,59 @@
-from flask import Flask, render_template,Response, request, jsonify, send_from_directory
-import os
+from flask import Flask, render_template, jsonify, Response
+import firebase_admin
+from firebase_admin import credentials, db
 import cv2
-from fb import get_db_reference
 
 app = Flask(__name__)
 
-KNOWN_FACES_FOLDER = 'known_faces'
-camera = cv2.VideoCapture(0)
+# Initialize Firebase
+def initialize_firebase():
+    cred = credentials.Certificate("ard-cloud-test-firebase-adminsdk-fbsvc-36cea9ff3a.json")
+    firebase_admin.initialize_app(cred, {
+        'databaseURL': 'https://ard-cloud-test-default-rtdb.asia-southeast1.firebasedatabase.app/'
+    })
 
-@app.route('/upload_faces')
-def upload_faces():
-    faces = os.listdir(KNOWN_FACES_FOLDER)  # List all files in known_faces directory
-    return render_template('uploadface.html', faces=faces)
+if not firebase_admin._apps:
+    initialize_firebase()
 
-@app.route('/remove_face', methods=['POST'])
-def remove_face():
-    data = request.json
-    face_path = os.path.join(KNOWN_FACES_FOLDER, data['face'])
-    
-    if os.path.exists(face_path):
-        os.remove(face_path)
-        return jsonify(success=True)
-    
-    return jsonify(success=False), 400
+def get_db_reference():
+    """Returns Firebase database reference"""
+    return db.reference()
 
-@app.route('/')
-@app.route('/live')
-def live_feed():
-    return render_template('livefeed.html')
 
-@app.route('/motion_status')
-def motion_status():
-    """Fetch motion status from Firebase"""
-    ref = get_db_reference().child("sensorData/motion")
-    motion = ref.get()
-    return jsonify({"motion": motion})
+camera = cv2.VideoCapture(0)  # Open default webcam
 
 def generate_frames():
-    """Generate frames from the webcam"""
     while True:
         success, frame = camera.read()
         if not success:
             break
         else:
             _, buffer = cv2.imencode('.jpg', frame)
-            frame_bytes = buffer.tobytes()
             yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+                   b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+
+
+@app.route('/live')
+def live_feed():
+    """Render Live Feed Page"""
+    return render_template('livefeed.html')
+
+
+@app.route('/live_data')
+def live_data():
+    """Fetch sensor data from Firebase"""
+    ref = db.reference("sensorData")
+    data = ref.get()
+
+    if data:
+        return jsonify(data)
+    else:
+        return jsonify({"error": "No data available"}), 404
 
 @app.route('/video_feed')
 def video_feed():
-    """Stream video feed when motion is detected"""
+    """Video streaming route"""
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
     app.run(debug=True)
-

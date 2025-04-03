@@ -37,6 +37,7 @@
         }
         .feed-container {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 80vh;
@@ -46,14 +47,50 @@
             height: 50vh;
             background-color: #333;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+            padding: 20px;
+        }
+        .data-box {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .status-alert {
+            font-size: 1.2rem;
+            font-weight: bold;
         }
     </style>
+    <script>
+        function fetchLiveData() {
+            fetch('/live_data')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById("status").innerText = "⚠️ No data available";
+                    } else {
+                        document.getElementById("temp").innerText = `🌡 Temperature: ${data.temperature}°C`;
+                        document.getElementById("humidity").innerText = `💧 Humidity: ${data.humidity}%`;
+                        
+                        if (data.motion) {
+                            document.getElementById("motion").innerHTML = "🚨 Motion Detected!";
+                            document.getElementById("motion").style.color = "red";
+                        } else {
+                            document.getElementById("motion").innerHTML = "✅ No Motion";
+                            document.getElementById("motion").style.color = "green";
+                        }
+                    }
+                })
+                .catch(error => console.error("Error fetching data:", error));
+        }
+
+        // Refresh data every 3 seconds
+        setInterval(fetchLiveData, 3000);
+    </script>
 </head>
-<body>
+<body onload="fetchLiveData()">
     <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
             <a class="navbar-brand text-white" href="#">Home Security</a>
@@ -67,9 +104,16 @@
             </div>
         </div>
     </nav>
+
     <div class="feed-container">
         <div class="feed-box">
             <h3>Camera Feed</h3>
+            <div class="data-box">
+                <p id="status">Fetching Data...</p>
+                <p id="temp"></p>
+                <p id="humidity"></p>
+                <p id="motion" class="status-alert"></p>
+            </div>
         </div>
     </div>
 </body>
