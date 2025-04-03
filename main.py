@@ -55,6 +55,18 @@ def alerts_data():
     else:
         return jsonify({"error": "No data available"}), 404
 
+@app.route('/get_alerts')
+def get_alerts():
+    """Fetch alerts from Firebase without removing them."""
+    ref = get_db_reference().child("alerts")
+    alerts = ref.get()  # Fetch alerts from Firebase
+    
+    if alerts:
+        alerts_list = [{"type": v["type"], "message": v["message"], "timestamp": v["timestamp"]} for k, v in alerts.items()]
+        return jsonify(alerts_list)
+    
+    return jsonify([])  # Return empty list if no alerts
+
 
 if __name__ == '__main__':
     app.run(debug=True)

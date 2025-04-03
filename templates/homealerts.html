@@ -72,40 +72,33 @@
         .green { background-color: green; }
     </style>
     <script>
-        async function fetchAlerts() {
-            try {
-                let response = await fetch('/alerts_data');
-                let data = await response.json();
+        function fetchAlerts() {
+            fetch('/get_alerts')
+            .then(response => response.json())
+            .then(data => {
+                let container = document.querySelector('.alert-container');
+                container.innerHTML = '';  // Remove this line to keep previous alerts
     
-                let alertContainer = document.querySelector(".alert-container");
-                alertContainer.innerHTML = ""; // Clear old alerts
-    
-                if (data.motion === 1) {
-                    alertContainer.innerHTML += `
+                data.forEach(alert => {
+                    let colorClass = alert.type === 'temperature' ? 'red' : 'yellow';
+                    let alertItem = `
                         <div class="alert-item">
-                            <div class="alert-info"><span class="alert-icon yellow"></span> Motion detected!</div>
-                            <div class="alert-time">${new Date().toLocaleTimeString()}</div>
-                        </div>`;
-                }
-                
-                if (data.temperature > 50) {
-                    alertContainer.innerHTML += `
-                        <div class="alert-item">
-                            <div class="alert-info"><span class="alert-icon red"></span> High temperature alert: ${data.temperature}°C</div>
-                            <div class="alert-time">${new Date().toLocaleTimeString()}</div>
-                        </div>`;
-                }
-                
-                if (alertContainer.innerHTML === "") {
-                    alertContainer.innerHTML = "<p>No recent alerts</p>";
-                }
-            } catch (error) {
-                console.error("Error fetching alerts:", error);
-            }
+                            <div class="alert-info">
+                                <span class="alert-icon ${colorClass}"></span> ${alert.message}
+                            </div>
+                            <div class="alert-time">${alert.timestamp}</div>
+                        </div>
+                    `;
+                    container.innerHTML += alertItem;
+                });
+            });
         }
     
-        setInterval(fetchAlerts, 5000); // Fetch alerts every 5 seconds
-    </script>    
+        // Fetch alerts initially and then every 10 seconds (but do NOT remove old ones)
+        fetchAlerts();
+        setInterval(fetchAlerts, 10000);
+    </script>
+     
 </head>
 <body>
     <nav class="navbar navbar-expand-lg">

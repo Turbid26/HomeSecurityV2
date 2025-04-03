@@ -45,9 +45,28 @@ def read_serial():
 
                 print(f"Data sent: Temp={temperature}, Humidity={humidity}, Motion={motion}")
 
+                if temperature > 40:
+                    add_alert("temperature", f"High Temperature Detected: {temperature}°C")
+
+                if motion == 1:
+                    add_alert("motion", "Motion Detected at Entryway")
+
         except Exception as e:
             print(f"⚠️ Error: {e}")
             time.sleep(1)  # Prevent flooding errors
+
+def add_alert(alert_type, message):
+    """Add a new alert to Firebase without overwriting existing ones."""
+    ref = get_db_reference().child("alerts")
+    new_alert_ref = ref.push()
+    alert_data = {
+        "type": alert_type,
+        "message": message,
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+    }
+    new_alert_ref.set(alert_data)
+    
+    print(f"Added alert: {alert_data}")
 
 if __name__ == "__main__":
     read_serial()
