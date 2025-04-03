@@ -5,6 +5,7 @@
 #define LED_PIN 4
 #define DHT_PIN 5
 #define DHT_TYPE DHT22
+#define BUZZER_PIN 25
 
 DHT dht(DHT_PIN, DHT_TYPE);
 
@@ -13,6 +14,7 @@ void setup() {
 
     pinMode(PIR_PIN, INPUT);
     pinMode(LED_PIN, OUTPUT);
+    pinMode(BUZZER_PIN, OUTPUT);
     
     Serial.println("ESP32 Sensor Data Logger Initialized...");
     dht.begin();
@@ -36,10 +38,12 @@ void loop() {
     }
 
     if (motion == HIGH) {
+       digitalWrite(BUZZER_PIN, HIGH);
         digitalWrite(LED_PIN, HIGH);
         Serial.println("Motion Detected!");
     } else {
         digitalWrite(LED_PIN, LOW);
+        digitalWrite(BUZZER_PIN, LOW);
     }
 
     delay(2000); // Send data every 2 seconds
