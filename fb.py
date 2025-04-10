@@ -5,7 +5,7 @@ from firebase_admin import credentials, db
 
 # Initialize Firebase
 def initialize_firebase():
-    cred = credentials.Certificate("ard-cloud-test-firebase-adminsdk-fbsvc-36cea9ff3a.json")
+    cred = credentials.Certificate("fb-admin.json")
     firebase_admin.initialize_app(cred, {
         'databaseURL': 'https://ard-cloud-test-default-rtdb.asia-southeast1.firebasedatabase.app/'
     })

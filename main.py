@@ -1,15 +1,24 @@
-from flask import Flask, render_template, jsonify, Response
+from flask import Flask, render_template, jsonify, Response, request, redirect, url_for, session
 import firebase_admin
 from firebase_admin import credentials, db
+import pyrebase
+import json
 
 app = Flask(__name__)
+app.secret_key = 'your_secret_key_here'
 
 # Initialize Firebase
 def initialize_firebase():
-    cred = credentials.Certificate("ard-cloud-test-firebase-adminsdk-fbsvc-36cea9ff3a.json")
+    cred = credentials.Certificate("fb-admin.json")
     firebase_admin.initialize_app(cred, {
         'databaseURL': 'https://ard-cloud-test-default-rtdb.asia-southeast1.firebasedatabase.app/'
     })
+
+with open('fb-nonadmin.json') as f:
+    firebaseConfig = json.load(f)
+
+firebase = pyrebase.initialize_app(firebaseConfig)
+auth = firebase.auth()
 
 if not firebase_admin._apps:
     initialize_firebase()
@@ -18,16 +27,41 @@ def get_db_reference():
     """Returns Firebase database reference"""
     return db.reference()
 
-@app.route('/')
-@app.route('/live')
-def live_feed():
-    """Render Live Feed Page"""
-    return render_template('livefeed.html')
+@app.route('/',  methods=['GET', 'POST'])
+def login():
+    message = ""
+    if request.method == 'POST':
+        action = request.form['action']
+        email = request.form['email']
+        password = request.form['password']
+        try:
+            if action == 'login':
+                user = auth.sign_in_with_email_and_password(email, password)
+                message = "✅ Login successful! Please Wait....."
+                session['user'] = user['email']
+                return redirect(url_for('live_feed'))
+            elif action == 'signup':
+                auth.create_user_with_email_and_password(email, password)
+                message = "🎉 User created successfully!"
+        except:
+            message = "❌ Error: Invalid email or password."
+    return render_template("login.html", message=message)
 
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+@app.context_processor
+def inject_user():
+    return dict(user=session.get('user'))
+
+@app.route('/live', methods=['GET', 'POST'])
+def live_feed():
+    return render_template('livefeed.html')
 
 @app.route('/live_data')
 def live_data():
-    """Fetch sensor data from Firebase"""
     ref = db.reference("sensorData")
     data = ref.get()
 
@@ -38,12 +72,10 @@ def live_data():
 
 @app.route('/home_alerts')
 def home_alerts():
-    """Render the Home Alerts page."""
     return render_template('homealerts.html')
 
 @app.route('/alerts_data')
 def alerts_data():
-    """Fetch sensor data from Firebase to display alerts"""
     ref = db.reference("sensorData")
     data = ref.get()
 
@@ -57,7 +89,6 @@ def alerts_data():
 
 @app.route('/get_alerts')
 def get_alerts():
-    """Fetch alerts from Firebase without removing them."""
     ref = get_db_reference().child("alerts")
     alerts = ref.get()  # Fetch alerts from Firebase
     

@@ -101,9 +101,24 @@
                     <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-upload"></i> Upload New</a></li>
                     <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-clock"></i> Recent Activity</a></li>
                 </ul>
+                <ul class="navbar-nav ms-auto">
+                    {% if user %}
+                        <li class="nav-item">
+                            <a class="nav-link text-info" href="#"><i class="fas fa-user"></i> {{ user }}</a>
+                        </li>
+                        <!-- <li class="nav-item">
+                            <a class="nav-link text-danger" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </li> -->
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link text-success" href="/"><i class="fas fa-sign-in-alt"></i> Login</a>
+                        </li>
+                    {% endif %}
+                </ul>
             </div>
         </div>
     </nav>
+    
 
     <div class="feed-container">
         <div class="feed-box">
