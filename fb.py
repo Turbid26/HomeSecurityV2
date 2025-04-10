@@ -20,7 +20,7 @@ def get_db_reference():
 def read_serial():
     """Reads ESP32 data and sends it to Firebase"""
     try:
-        ser = serial.Serial('COM12', 115200, timeout=1)  # Adjust to your port
+        ser = serial.Serial('COM7', 115200, timeout=1)  # Adjust to your port
         print("✅ Connected to ESP32")
     except serial.SerialException as e:
         print(f"❌ Serial connection failed: {e}")
