@@ -4,7 +4,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from datetime import datetime
-# Cloudinary config
+
 cloudinary.config(
     cloud_name="duhho2j3z",
     api_key="379375491312472",
@@ -17,14 +17,6 @@ app = Flask(__name__)
 cred = credentials.Certificate("fb-admin.json")  # your Firebase service account
 firebase_admin.initialize_app(cred)
 db = firestore.client()
-
-try:
-    print("Uploading test.jpg to Cloudinary...")
-    response = cloudinary.uploader.upload("test.jpg")
-    print("Upload successful!")
-    print("URL:", response.get("secure_url"))
-except Exception as e:
-    print("Error during upload:", e)
 
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
