@@ -1,0 +1,99 @@
+{% extends "nav.html" %}
+{% block title %}Upload Faces{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #121212;
+        color: #fff;
+        text-align: center;
+    }
+    .upload-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 50px;
+    }
+    .upload-box {
+        width: 300px;
+        background-color: #1e1e1e;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(255,255,255,0.1);
+        margin-bottom: 50px;
+    }
+    .form-control {
+        margin-bottom: 15px;
+    }
+    .known-faces {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+        padding: 20px;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    .face-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: #1e1e1e;
+        padding: 15px;
+        border-radius: 8px;
+        width: 150px;
+        box-shadow: 0 0 5px rgba(255,255,255,0.1);
+    }
+    .face-item img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 50%;
+        margin-bottom: 10px;
+    }
+    .remove-btn {
+        background-color: red;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+</style>
+
+<div class="upload-container">
+    <h1>UPLOAD NEW FACE</h1>
+    <div class="upload-box">
+        <form action="/upload" method="POST" enctype="multipart/form-data">
+            <input type="text" name="name" class="form-control" placeholder="Enter name" required>
+            <input type="file" name="image" class="form-control" accept="image/*" required>
+            <button type="submit" class="btn btn-primary w-100">Upload</button>
+        </form>
+    </div>
+</div>
+
+<div class="known-faces">
+    {% for face_url in faces %}
+    <div class="face-item">
+        <img src="{{ face_url }}" alt="Known Face">
+        <span>{{ face_url.split('/')[-1].split('.')[0] }}</span>
+        <button class="remove-btn" onclick="removeFace('{{ face_url }}')">Remove</button>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    function removeFace(faceUrl) {
+        fetch('/remove_face', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ face: faceUrl })
+        }).then(response => response.json()).then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+</script>
+{% endblock %}
