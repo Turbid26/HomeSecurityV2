@@ -1,8 +1,9 @@
 from flask import Flask, render_template, jsonify, Response, request, redirect, url_for, session
 import firebase_admin
-from firebase_admin import credentials, db
+from firebase_admin import credentials, db, firestore
 import pyrebase
 import json
+from routes.upload import upload_bp
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -97,7 +98,6 @@ def get_alerts():
         return jsonify(alerts_list)
     
     return jsonify([])  # Return empty list if no alerts
-
 
 if __name__ == '__main__':
     app.run(debug=True)

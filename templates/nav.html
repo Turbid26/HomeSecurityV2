@@ -44,8 +44,8 @@
             <div class="collapse navbar-collapse justify-content-center">
                 <ul class="navbar-nav">
                     <li class="nav-item"><a class="nav-link {% if active == 'live' %}active{% endif %}" href="/live"><i class="fas fa-video"></i> Live Feed</a></li>
-                    <li class="nav-item"><a class="nav-link {% if active == 'alerts' %}active{% endif %}" href="/home_alerts"><i class="fas fa-bell"></i> Home Alerts</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-upload"></i> Upload New</a></li>
+                    <li class="nav-item"><a class="nav-link {% if active == 'home_alerts' %}active{% endif %}" href="/home_alerts"><i class="fas fa-bell"></i> Home Alerts</a></li>
+                    <li class="nav-item"><a class="nav-link {% if active == 'upload' %}active{% endif %}" href="/upload"><i class="fas fa-upload"></i> Upload New</a></li>
                     <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-clock"></i> Recent Activity</a></li>
                 </ul>
                 <ul class="navbar-nav ms-auto">
@@ -54,7 +54,7 @@
                             <a class="nav-link text-info" href="#"><i class="fas fa-user"></i> {{ user }}</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-danger" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                            <a class="nav-link text-danger" href="{{ url_for('auth_bp.logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
                         </li>
                     {% else %}
                         <li class="nav-item">
