@@ -98,17 +98,16 @@
     <div class="upload-box">
         <form action="/upload" method="POST" enctype="multipart/form-data">
             <input type="text" name="name" class="form-control" placeholder="Enter name" required>
+
             <!-- Role Dropdown -->
             <div class="select-wrapper">
-                <div class="select-wrapper">
-                    <select name="role" class="form-control" id="roleSelect">
-                        <option value="family">Family</option>
-                        <option value="guest">Guest</option>
-                    </select>
-                </div>                
+                <select name="role" class="form-control" id="roleSelect">
+                    <option value="family">Family</option>
+                    <option value="guest">Guest</option>
+                </select>
             </div>
 
-            <!-- Guest Fields (hidden by default) -->
+            <!-- Guest Fields -->
             <div id="guestFields" style="display: none; margin-top: 10px;">
                 <label style="text-align: left; width: 100%;">Start Time</label>
                 <input type="datetime-local" name="start_time" class="form-control">
@@ -145,16 +144,21 @@
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ face: faceUrl })
         }).then(response => response.json()).then(data => {
-            if (data.success) {
-                location.reload();
-            }
+            if (data.success) location.reload();
         });
     }
 
-    function toggleGuestFields() {
-        const role = document.getElementById("roleSelect").value;
+    document.addEventListener("DOMContentLoaded", function () {
+        const roleSelect = document.getElementById("roleSelect");
         const guestFields = document.getElementById("guestFields");
-        guestFields.style.display = role === "guest" ? "block" : "none";
-    }
+
+        function toggleGuestFields() {
+            guestFields.style.display = roleSelect.value === "guest" ? "block" : "none";
+        }
+
+        toggleGuestFields();
+        roleSelect.addEventListener("change", toggleGuestFields);
+    });
 </script>
 {% endblock %}
+
