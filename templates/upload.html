@@ -67,6 +67,21 @@
     <div class="upload-box">
         <form action="/upload" method="POST" enctype="multipart/form-data">
             <input type="text" name="name" class="form-control" placeholder="Enter name" required>
+            <!-- Role Dropdown -->
+            <select name="role" id="roleSelect" class="form-control" required onchange="toggleGuestFields()">
+                <option value="family">Family</option>
+                <option value="guest">Guest</option>
+            </select>
+
+            <!-- Guest Fields (hidden by default) -->
+            <div id="guestFields" style="display: none; margin-top: 10px;">
+                <label style="text-align: left; width: 100%;">Start Time</label>
+                <input type="datetime-local" name="start_time" class="form-control">
+
+                <label style="text-align: left; width: 100%;">Expiry Time</label>
+                <input type="datetime-local" name="expiry_time" class="form-control">
+            </div>
+
             <input type="file" name="image" class="form-control" accept="image/*" required>
             <button type="submit" class="btn btn-primary w-100">Upload</button>
         </form>
@@ -74,11 +89,16 @@
 </div>
 
 <div class="known-faces">
-    {% for face_url in faces %}
+    {% for face in faces %}
     <div class="face-item">
-        <img src="{{ face_url }}" alt="Known Face">
-        <span>{{ face_url.split('/')[-1].split('.')[0] }}</span>
-        <button class="remove-btn" onclick="removeFace('{{ face_url }}')">Remove</button>
+        <img src="{{ face.url }}" alt="Known Face">
+        <span>{{ face.name }}</span>
+        <small>{{ face.role | capitalize }}</small>
+        {% if face.role == 'guest' %}
+            <small>From: {{ face.start_time }}</small>
+            <small>Until: {{ face.expiry_time }}</small>
+        {% endif %}
+        <button class="remove-btn" onclick="removeFace('{{ face.url }}')">Remove</button>
     </div>
     {% endfor %}
 </div>
@@ -94,6 +114,12 @@
                 location.reload();
             }
         });
+    }
+
+    function toggleGuestFields() {
+        const role = document.getElementById("roleSelect").value;
+        const guestFields = document.getElementById("guestFields");
+        guestFields.style.display = role === "guest" ? "block" : "none";
     }
 </script>
 {% endblock %}
