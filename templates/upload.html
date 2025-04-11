@@ -60,6 +60,33 @@
         cursor: pointer;
         margin-top: 10px;
     }
+    .select-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .select-wrapper select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-color: #f5f5f5;
+        color: #0d0d0d;
+        border: 1px solid #555;
+        padding: 10px;
+        padding-right: 30px;
+        border-radius: 5px;
+        width: 100%;
+    }
+
+    .select-wrapper::after {
+        content: "▼";
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: #aaa;
+    }
 </style>
 
 <div class="upload-container">
@@ -68,10 +95,14 @@
         <form action="/upload" method="POST" enctype="multipart/form-data">
             <input type="text" name="name" class="form-control" placeholder="Enter name" required>
             <!-- Role Dropdown -->
-            <select name="role" id="roleSelect" class="form-control" required onchange="toggleGuestFields()">
-                <option value="family">Family</option>
-                <option value="guest">Guest</option>
-            </select>
+            <div class="select-wrapper">
+                <div class="select-wrapper">
+                    <select name="role" class="form-control" id="roleSelect">
+                        <option value="family">Family</option>
+                        <option value="guest">Guest</option>
+                    </select>
+                </div>                
+            </div>
 
             <!-- Guest Fields (hidden by default) -->
             <div id="guestFields" style="display: none; margin-top: 10px;">
