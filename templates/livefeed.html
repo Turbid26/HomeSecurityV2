@@ -1,40 +1,13 @@
 <!-- templates/livefeed.html -->
 {% extends "nav.html" %}
 {% block title %}Live Feed{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/livefeed.css') }}">
+{% endblock %}
+
 {% block content %}
-<style>
-     body {
-            background-color: #121212;
-            color: #fff;
-        }
-        .feed-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 80vh;
-        }
-        .feed-box {
-            width: 70%;
-            height: 50vh;
-            background-color: #333;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
-            padding: 20px;
-        }
-        .data-box {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .status-alert {
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-</style>
+
 <div class="feed-container">
     <div class="feed-box">
         <h3>Camera Feed</h3>

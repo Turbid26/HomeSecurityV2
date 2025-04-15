@@ -2,49 +2,12 @@
 
 {% block title %}Home Alerts{% endblock %}
 
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/home_alerts.css') }}">
+{% endblock %}
+
 {% block content %}
 
-<style>
-     body {
-            background-color: #121212;
-            color: #fff;
-        }
-     .alert-container {
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #1e1e1e;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
-        }
-        .alert-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px;
-            border-bottom: 1px solid #333;
-        }
-        .alert-item:last-child {
-            border-bottom: none;
-        }
-        .alert-info {
-            display: flex;
-            align-items: center;
-        }
-        .alert-icon {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 15px;
-        }
-        .alert-time {
-            font-size: 0.9em;
-            color: #aaa;
-        }
-        .red { background-color: red; }
-        .yellow { background-color: yellow; }
-        .green { background-color: green; }
-</style>
 <div class="alert-container">
     <div class="alert-item">
         <div class="alert-info"><span class="alert-icon red"></span> Possible fire detected</div>
