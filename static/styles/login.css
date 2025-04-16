@@ -1,81 +1,88 @@
 * {
-    box-sizing: border-box;
-  }
+  box-sizing: border-box;
+}
 
-  body {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #e3f2fd, #ffffff);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-  }
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #0a0a0a, #000000);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  color: #e0e0e0; /* ash text */
+}
 
-  .glass-card {
-    background-color: white;
-    border-radius: 16px;
-    padding: 40px;
-    width: 350px;
-    box-shadow: 0 10px 30px rgba(0, 123, 255, 0.15);
-    animation: fadeIn 0.6s ease-in-out;
-    border: 1px solid #d6e9f9;
-  }
+.glass-card {
+  background-color: #111111;
+  border-radius: 16px;
+  padding: 40px;
+  width: 350px;
+  box-shadow: 0 10px 30px rgba(176, 176, 176, 0.15); /* ash shadow */
+  animation: fadeIn 0.6s ease-in-out;
+  border: 1px solid #2a2a2a;
+}
 
-  h2 {
-    text-align: center;
-    color: #007bff;
-    margin-bottom: 25px;
-    font-weight: 600;
-  }
+h2 {
+  text-align: center;
+  color: #b0b0b0;
+  margin-bottom: 25px;
+  font-weight: 600;
+}
 
-  input {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border: 1px solid #cfe2ff;
-    border-radius: 8px;
-    font-size: 15px;
-  }
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+  font-size: 15px;
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+}
 
-  input:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.4);
-  }
+input::placeholder {
+  color: #888888;
+}
 
-  button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
+input:focus {
+  outline: none;
+  border-color: #8A0303; /* blood red */
+  box-shadow: 0 0 5px rgba(138, 3, 3, 0.6); /* red glow */
+}
 
-  button:hover {
-    background-color: #0056b3;
-  }
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  background-color: #2b2b2b;
+  color: #e0e0e0;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
 
-  .message {
-    margin-top: 15px;
-    font-size: 14px;
-    text-align: center;
-    color: #d9534f;
-  }
+button:hover {
+  background-color: #3f3f3f;
+}
 
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+.message {
+  margin-top: 15px;
+  font-size: 14px;
+  text-align: center;
+  color: #b0b0b0;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
   }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
