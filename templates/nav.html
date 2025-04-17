@@ -24,18 +24,30 @@
                 </ul>
                 <ul class="navbar-nav ms-auto">
                     {% if user %}
-                        <li class="nav-item">
-                            <a class="nav-link text-info" href="#"><i class="fas fa-user"></i> {{ user }}</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-danger" href="{{ url_for('auth_bp.logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                        </li>
+                    <li class="nav-item dropdown user-dropdown justify-content-end">
+                        <a class="nav-link dropdown-toggle text-info" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user"></i> {{ user }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li>
+                                <a class="dropdown-item test-success" href="{{ url_for('profile_bp.profile') }}">
+                                    <i class="fas fa-id-badge"></i> Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="{{ url_for('auth_bp.logout') }}">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                     {% else %}
                         <li class="nav-item">
                             <a class="nav-link text-success" href="/"><i class="fas fa-sign-in-alt"></i> Login</a>
                         </li>
                     {% endif %}
                 </ul>
+                
             </div>
         </div>
     </nav>

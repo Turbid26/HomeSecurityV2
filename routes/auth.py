@@ -27,6 +27,7 @@ def login():
                 message = "✅ Login successful! Redirecting..."
                 return redirect(url_for('live_feed_bp.live_feed'))  # Adjust based on your route
             elif action == 'signup':
+                print("Singing up")
                 auth.create_user_with_email_and_password(email, password)
                 message = "🎉 Signup successful! Please log in."
         except Exception as e:
