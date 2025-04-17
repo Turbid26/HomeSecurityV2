@@ -11,6 +11,12 @@
 <div class="feed-container">
     <div class="feed-box">
         <h3>Camera Feed</h3>
+        <!-- Embed the live video stream -->
+        <div class="camera-box">
+            <img id="video-stream" src="{{ url_for('live_feed_bp.video_feed') }}" alt="Live Camera Feed" width="100%">
+        </div>
+
+        <!-- Optional: Sensor data (keep if needed) -->
         <div class="data-box">
             <p id="status">Fetching Data...</p>
             <p id="temp"></p>
