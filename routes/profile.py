@@ -17,34 +17,34 @@ def profile():
         return redirect(url_for('auth_bp.login'))
     return render_template('profile.html')
 
-@profile_bp.route('/change_password', methods=['POST'])
+@profile_bp.route('/change_password', methods=['GET', 'POST'])
 def change_password():
     if 'user' not in session:
         return redirect(url_for('auth_bp.login'))
-
-    email = session['user']
-    try:
-        auth.send_password_reset_email(email)
-        flash("🔐 Password reset email sent!", "success")
-    except:
-        flash("⚠️ Failed to send reset email. Try again later.", "error")
-
-    return redirect(url_for('profile.profile'))
-
-@profile_bp.route('/update_surroundings', methods=['POST'])
+    return render_template('profile_sub/change_password.html')
+@profile_bp.route('/update_surroundings', methods=['GET', 'POST'])
 def update_surroundings():
     if 'user' not in session:
         return redirect(url_for('auth_bp.login'))
 
-    user_id = session['user'].replace('.', '_')  # or however you're storing users
-    ref = get_realtime_db().child(f"SensorData/{user_id}")
+    # Reference to root 'sensorData' in Firebase
+    ref = get_realtime_db().child("sensorData")
 
-    settings = {
-        "device_name": request.form.get("device_name"),
-        "alert_motion": "alert_motion" in request.form,
-        "alert_temp": "alert_temp" in request.form,
-    }
+    # If the request is GET, fetch the current sensor data
+    if request.method == 'GET':
+        try:
+            settings = ref.get().val()  # Fetch the current settings from Firebase
+        except Exception as e:
+            flash(f"⚠️ Failed to load home details. Error: {str(e)}", "error")
+            settings = None
 
-    ref.set(settings)
-    flash("🏠 Home surroundings updated!", "success")
-    return redirect(url_for('profile_bp.profile'))
+        return render_template('profile_sub/home_surroundings.html', settings=settings)
+
+    # If the request is POST, handle the form submission (updating settings)
+    elif request.method == 'POST':
+        # Handle updates here if needed (not required for your current scenario)
+        pass
+
+@profile_bp.route('/view_analysis')
+def view_analysis():
+    return render_template('profile_sub/view_analysis.html')

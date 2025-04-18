@@ -1,0 +1,65 @@
+{% extends "nav.html" %}
+{% block title %}Profile{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <ul class="nav nav-tabs" id="profileTabs">
+    <li class="nav-item">
+      <a class="nav-link active" id="password-tab" data-toggle="tab" href="#password">Change Password</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" id="surroundings-tab" data-toggle="tab" href="#surroundings">Home Surroundings</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" id="analysis-tab" data-toggle="tab" href="#analysis">View Analysis</a>
+    </li>
+  </ul>
+
+  <div class="tab-content mt-3">
+    <!-- Change Password Tab -->
+    <div class="tab-pane fade show active" id="password">
+      <form action="{{ url_for('profile_bp.change_password') }}" method="POST">
+        <button class="btn btn-warning">Send Password Reset Email</button>
+      </form>
+    </div>
+
+    <!-- Home Surroundings Tab -->
+
+    <div class="tab-pane fade" id="surroundings">
+      <form action="{{ url_for('profile_bp.update_surroundings') }}" method="POST">
+        <div class="form-group">
+          <label for="deviceName">Device Nickname</label>
+          <input type="text" class="form-control" name="device_name" placeholder="e.g. Front Gate"
+            value="{{ settings.device_name or '' }}">
+        </div>
+
+        <div class="form-group">
+          <label>Alert Preferences</label><br>
+          <input type="checkbox" name="alert_motion" {% if settings.alert_motion %}checked{% endif %}> Motion Alerts<br>
+          <input type="checkbox" name="alert_temp" {% if settings.alert_temp %}checked{% endif %}> Temperature Alerts
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save Settings</button>
+      </form>
+    </div>
+    <!-- View Analysis Tab (blank for now) -->
+    <div class="tab-pane fade" id="analysis">
+      <p>📊 Coming soon!</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Ensures active tab shows properly when loaded
+  $('#profileTabs a').on('click', function (e) {
+    e.preventDefault();
+    $(this).tab('show');
+  });
+</script>
+{% endblock %}

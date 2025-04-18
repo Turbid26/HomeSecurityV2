@@ -1,0 +1,14 @@
+{% extends "profile.html" %}
+
+{% block tab_content %}
+<div class="tab-pane fade show active" id="surroundings">
+    <h3>Current Home Surroundings</h3>
+    
+    {% if settings %}
+        <p><strong>Temperature:</strong> {{ settings.temperature or 'Not Available' }} °C</p>
+        <p><strong>Humidity:</strong> {{ settings.humidity or 'Not Available' }} %</p>
+    {% else %}
+        <p>No sensor data available.</p>
+    {% endif %}
+</div>
+{% endblock %}
