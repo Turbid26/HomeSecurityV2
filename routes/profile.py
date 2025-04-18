@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, session, redirect, url_for, reques
 import pyrebase
 import json
 from utils.fb_config import get_realtime_db
+from firebase_admin import db
 
 profile_bp = Blueprint('profile_bp', __name__)
 
@@ -28,12 +29,13 @@ def update_surroundings():
         return redirect(url_for('auth_bp.login'))
 
     # Reference to root 'sensorData' in Firebase
-    ref = get_realtime_db().child("sensorData")
-
+    #ref = get_realtime_db().child("sensorData")
+    ref = db.reference("sensorData")
+    print(ref.get())
     # If the request is GET, fetch the current sensor data
     if request.method == 'GET':
         try:
-            settings = ref.get().val()  # Fetch the current settings from Firebase
+            settings = ref.get()  # Fetch the current settings from Firebase
         except Exception as e:
             flash(f"⚠️ Failed to load home details. Error: {str(e)}", "error")
             settings = None

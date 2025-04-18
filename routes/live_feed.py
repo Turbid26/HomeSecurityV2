@@ -4,7 +4,7 @@ from firebase_admin import db
 
 live_feed_bp = Blueprint('live_feed_bp', __name__)
 
-camera = cv2.VideoCapture(0)
+camera = cv2.VideoCapture(1)
 
 def gen_frames():
     while True:

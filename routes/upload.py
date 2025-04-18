@@ -85,7 +85,7 @@ def remove_expired_guests(user_email):
                     expiry_time = datetime.strptime(expiry_str, "%Y-%m-%dT%H:%M")
                     print(expiry_time, "  ", now)
                     print(expiry_time - now)
-                    if expiry_time < now:
+                    if expiry_time > now:
                         updated_faces.append(face)
                     else:
                         print(f"Removing expired guest: {face.get('name')}")
