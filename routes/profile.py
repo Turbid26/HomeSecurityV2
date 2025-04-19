@@ -23,6 +23,7 @@ def change_password():
     if 'user' not in session:
         return redirect(url_for('auth_bp.login'))
     return render_template('profile_sub/change_password.html')
+
 @profile_bp.route('/update_surroundings', methods=['GET', 'POST'])
 def update_surroundings():
     if 'user' not in session:
