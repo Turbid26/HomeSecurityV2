@@ -1,0 +1,8 @@
+numpy
+pandas
+flask
+datetime
+pyrebase4
+firebase_admin
+cloudinary
+opencv-python
