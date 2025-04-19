@@ -1,5 +1,4 @@
 from flask import Blueprint, request, redirect, render_template, session, url_for
-import cloudinary.uploader
 from datetime import datetime
 from utils.fb_config import firestore_db
 from utils.cloud_utils import upload_to_cloudinary
