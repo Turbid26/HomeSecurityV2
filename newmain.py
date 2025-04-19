@@ -6,6 +6,7 @@ from routes.home_alerts import home_alerts_bp
 from routes.upload import upload_bp
 from routes.remove_face import remove_bp
 from routes.profile import profile_bp
+from routes.activities import activities_bp
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -20,6 +21,7 @@ app.register_blueprint(home_alerts_bp)
 app.register_blueprint(upload_bp)
 app.register_blueprint(remove_bp)
 app.register_blueprint(profile_bp)
+app.register_blueprint(activities_bp)
 
 if __name__ == '__main__':
     app.run(debug=True)

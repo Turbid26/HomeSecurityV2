@@ -1,0 +1,32 @@
+{% extends "nav.html" %}
+
+{% block title %}Recent Activities{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/activities.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="activity-container">
+  <h1 class="activity-header">Recent Activity</h1>
+
+  {% if faces %}
+    {% for face in faces %}
+      <div class="activity-card">
+        <img src="{{ face.image_url }}" alt="Face" class="activity-image">
+        <div class="activity-details">
+          <h5>{{ face.label or "Unknown Face" }}</h5>
+          <p>Picture taken at {{ face.timestamp }}</p>
+          <button class="mark-button">Mark as Known</button>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No recent alerts.</p>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- JS if needed -->
+{% endblock %}
