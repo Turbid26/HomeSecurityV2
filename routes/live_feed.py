@@ -1,23 +1,87 @@
 from flask import Blueprint, render_template, jsonify, session, redirect, url_for, Response
 import cv2
 from firebase_admin import db
+import numpy as np
+import urllib.request
+import face_recognition
+from utils.cloud_utils import upload_to_cloudinary
+from datetime import datetime
+from utils.fb_config import firestore_db
 
 live_feed_bp = Blueprint('live_feed_bp', __name__)
 
 camera = cv2.VideoCapture(0)
 
-def gen_frames():
+from datetime import datetime
+
+def gen_frames(user_email):
+    known_face_encodings = get_known_face_encodings(user_email)
+    # if not known_face_encodings:
+    #     print("No valid known face encodings")
+    #     return
+
     while True:
         success, frame = camera.read()
         if not success:
             break
-        else:
-            # Encode frame as JPEG
-            ret, buffer = cv2.imencode('.jpg', frame)
-            frame = buffer.tobytes()
-            # Yield frame in proper format for HTML5 video streaming
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+        small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
+        rgb_small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
+
+        face_locations = face_recognition.face_locations(rgb_small_frame)
+        face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
+
+        match_found = False
+        for face_encoding in face_encodings:
+            matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
+            if any(matches):
+                match_found = True
+                break
+
+        if not match_found and face_encodings:
+            _, buffer = cv2.imencode('.jpg', frame)
+            image_url = upload_to_cloudinary(
+                image=buffer.tobytes(),
+                name="Unknown",
+                folder="HomeSec/Alerted/"
+            )
+
+            new_alert = {
+                "image_url": image_url,
+                "label": "Unknown",
+                "timestamp": datetime.utcnow().isoformat(),
+                "email": user_email
+            }
+
+            try:
+                user_ref = firestore_db.collection('users').document(user_email)
+                user_doc = user_ref.get()
+
+                if not user_doc.exists:
+                    print(f"No user found for {user_email}")
+                    return
+
+                # Get the current alerted_faces or initialize an empty list if not found
+                user_data = user_doc.to_dict()
+                alerted_faces = user_data.get("alerted_faces", [])
+                
+                # Add the new alert to the list
+                alerted_faces.append(new_alert)
+
+                # Update the user's alerted_faces field in Firestore
+                user_ref.update({
+                    "alerted_faces": alerted_faces,
+                    "last_updated": datetime.utcnow().isoformat()
+                })
+
+                print(f"Alert added successfully for {user_email}")
+            except Exception as e:
+                print(f"Error updating Firestore: {e}")
+
+        ret, buffer = cv2.imencode('.jpg', frame)
+        frame = buffer.tobytes()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 @live_feed_bp.route('/live', methods=['GET'])
 def live_feed():
@@ -25,6 +89,46 @@ def live_feed():
         return redirect(url_for('auth_bp.login'))
     return render_template('livefeed.html')
 
+def get_known_face_encodings(user_email):
+    try:
+        # Access Firestore user document
+        user_ref = firestore_db.collection('users').document(user_email)
+        user_doc = user_ref.get()
+
+        if not user_doc.exists:
+            print(f"No user found for {user_email}")
+            return []
+
+        # Get the known_faces field
+        known_faces = user_doc.to_dict().get("known_faces", [])
+        if not known_faces:
+            print(f"No known faces found for {user_email}")
+            return []
+
+        encodings = []
+        for face in known_faces:
+            url = face.get("url")
+            if not url:
+                continue
+
+            try:
+                resp = urllib.request.urlopen(url)
+                image = np.asarray(bytearray(resp.read()), dtype="uint8")
+                img = cv2.imdecode(image, cv2.IMREAD_COLOR)
+                face_encoding = face_recognition.face_encodings(img)
+                if face_encoding:
+                    encodings.append(face_encoding[0])
+            except Exception as e:
+                print(f"Error processing known face URL: {url} — {e}")
+                continue
+
+        return encodings
+    except Exception as e:
+        print(f"Error retrieving known faces: {e}")
+        return []
+
+
+    
 # @live_feed_bp.route('/live_data', methods=['GET'])
 # def live_data():
 #     try:
@@ -39,4 +143,7 @@ def live_feed():
 
 @live_feed_bp.route('/video_feed')
 def video_feed():
-    return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    if 'user' not in session:
+        return redirect(url_for('auth_bp.login'))
+    user_email = session['user']
+    return Response(gen_frames(user_email), mimetype='multipart/x-mixed-replace; boundary=frame')

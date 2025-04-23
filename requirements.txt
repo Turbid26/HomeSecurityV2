@@ -6,3 +6,6 @@ pyrebase4
 firebase_admin
 cloudinary
 opencv-python
+urllib
+face_recognition
+dlib

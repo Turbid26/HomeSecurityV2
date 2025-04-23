@@ -11,6 +11,7 @@ def home_alerts():
 @home_alerts_bp.route('/get_alerts')
 def get_alerts():
     user_id = session.get('user_id')
+    print(user_id)
     if not user_id:
         return jsonify({"error": "User not logged in"}), 401
 
