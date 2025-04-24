@@ -6,13 +6,25 @@ import numpy as np
 from datetime import datetime
 from utils.cloud_utils import upload_to_cloudinary
 from utils.fb_config import firestore_db
+import time
+from datetime import datetime, timedelta
 
-camera = cv2.VideoCapture(1)
+ALERT_INTERVAL = timedelta(seconds=30)
+last_alert_time = datetime.min
+
+camera = cv2.VideoCapture(0)
+
+TARGET_FPS = 10
+FRAME_DURATION = 1.0 / TARGET_FPS
 
 def gen_frames(user_email):
+    ALERT_INTERVAL = timedelta(seconds=30)
+    last_alert_time = datetime.min
     known_face_encodings = get_known_face_encodings(user_email)
 
-    while True:
+    while True:  # Wrap in list to make it mutable
+
+        start_time = time.time()
         success, frame = camera.read()
         if not success:
             break
@@ -24,7 +36,7 @@ def gen_frames(user_email):
         face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
 
         match_found = False
-        for face_encoding in face_encodings:
+        for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
             matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
             if any(matches):
                 match_found = True
@@ -34,52 +46,56 @@ def gen_frames(user_email):
                 bottom *= 4
                 left *= 4
 
-                cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
+                cv2.rectangle(frame, (left, top), (right, bottom), (255, 0, 0), 2)
 
         if not match_found and face_encodings:
-            _, buffer = cv2.imencode('.jpg', frame)
-            image_url = upload_to_cloudinary(
-                image=buffer.tobytes(),
-                name="Unknown",
-                folder="HomeSec/Alerted/"
-            )
+            now = datetime.utcnow()
+            if now - last_alert_time >= ALERT_INTERVAL:
+                _, buffer = cv2.imencode('.jpg', frame)
+                image_url = upload_to_cloudinary(
+                    image=buffer.tobytes(),
+                    name="Unknown",
+                    folder="HomeSec/Alerted/"
+                )
 
-            new_alert = {
-                "image_url": image_url,
-                "label": "Unknown",
-                "timestamp": datetime.utcnow().isoformat(),
-                "email": user_email
-            }
+                new_alert = {
+                    "image_url": image_url,
+                    "label": "Unknown",
+                    "timestamp": now.isoformat(),
+                    "email": user_email
+                }
 
-            try:
-                user_ref = firestore_db.collection('users').document(user_email)
-                user_doc = user_ref.get()
+                try:
+                    user_ref = firestore_db.collection('users').document(user_email)
+                    user_doc = user_ref.get()
 
-                if not user_doc.exists:
-                    print(f"No user found for {user_email}")
-                    return
+                    if not user_doc.exists:
+                        print(f"No user found for {user_email}")
+                        return
 
-                # Get the current alerted_faces or initialize an empty list if not found
-                user_data = user_doc.to_dict()
-                alerted_faces = user_data.get("alerted_faces", [])
-                
-                # Add the new alert to the list
-                alerted_faces.append(new_alert)
+                    user_data = user_doc.to_dict()
+                    alerted_faces = user_data.get("alerted_faces", [])
+                    alerted_faces.append(new_alert)
 
-                # Update the user's alerted_faces field in Firestore
-                user_ref.update({
-                    "alerted_faces": alerted_faces,
-                    "last_updated": datetime.utcnow().isoformat()
-                })
+                    user_ref.update({
+                        "alerted_faces": alerted_faces,
+                        "last_updated": now.isoformat()
+                    })
 
-                print(f"Alert added successfully for {user_email}")
-            except Exception as e:
-                print(f"Error updating Firestore: {e}")
+                    print(f"Alert added successfully for {user_email}")
+                    last_alert_time = now  # ✅ Update the last alert time
+
+                except Exception as e:
+                    print(f"Error updating Firestore: {e}")
 
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+        elapsed = time.time() - start_time
+        if elapsed < FRAME_DURATION:
+            time.sleep(FRAME_DURATION - elapsed)
 
 def get_known_face_encodings(user_email):
     try:
