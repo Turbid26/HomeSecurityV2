@@ -28,7 +28,13 @@ def gen_frames(user_email):
             matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
             if any(matches):
                 match_found = True
-                break
+                
+                top *= 4
+                right *= 4
+                bottom *= 4
+                left *= 4
+
+                cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
 
         if not match_found and face_encodings:
             _, buffer = cv2.imencode('.jpg', frame)
