@@ -8,3 +8,4 @@ cloudinary
 opencv-python
 face_recognition
 dlib
+requests
