@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,45 +8,47 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/nav.css') }}">
     
     {% block head %}{% endblock %}
-
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg">
+    <!-- Full-width dark navbar -->
+    <nav class="navbar navbar-expand-lg bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand text-white" href="#">Home Security</a>
-            <div class="collapse navbar-collapse justify-content-center">
-                <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link {% if active == 'live' %}active{% endif %}" href="/live"><i class="fas fa-video"></i> Live Feed</a></li>
-                    <li class="nav-item"><a class="nav-link {% if active == 'home_alerts' %}active{% endif %}" href="/home_alerts"><i class="fas fa-bell"></i> Home Alerts</a></li>
-                    <li class="nav-item"><a class="nav-link {% if active == 'upload' %}active{% endif %}" href="/upload"><i class="fas fa-upload"></i> Upload New</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/recent_activities"><i class="fas fa-clock"></i> Recent Activity</a></li>
-                </ul>
-                <ul class="navbar-nav ms-auto">
-                    {% if user %}
-                    <li class="nav-item dropdown user-dropdown justify-content-end">
-                        <a class="nav-link dropdown-toggle text-info" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-user"></i> {{ user }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li>
-                                <a class="dropdown-item test-success" href="{{ url_for('profile_bp.profile') }}">
-                                    <i class="fas fa-id-badge"></i> Profile
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item text-danger" href="{{ url_for('auth_bp.logout') }}">
-                                    <i class="fas fa-sign-out-alt"></i> Logout
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link text-success" href="/"><i class="fas fa-sign-in-alt"></i> Login</a>
+            <!-- Add large margin-start to shift everything to the right -->
+            <div class="d-flex w-100" style="margin-left: 100px;">
+                <a class="navbar-brand text-white" href="#">Home Security</a>
+                <div class="collapse navbar-collapse justify-content-center">
+                    <ul class="navbar-nav">
+                        <li class="nav-item"><a class="nav-link {% if active == 'live' %}active{% endif %}" href="/live"><i class="fas fa-video"></i> Live Feed</a></li>
+                        <li class="nav-item"><a class="nav-link {% if active == 'home_alerts' %}active{% endif %}" href="/home_alerts"><i class="fas fa-bell"></i> Home Alerts</a></li>
+                        <li class="nav-item"><a class="nav-link {% if active == 'upload' %}active{% endif %}" href="/upload"><i class="fas fa-upload"></i> Upload New</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/recent_activities"><i class="fas fa-clock"></i> Recent Activity</a></li>
+                    </ul>
+                    <ul class="navbar-nav ms-auto">
+                        {% if user %}
+                        <li class="nav-item dropdown user-dropdown justify-content-end">
+                            <a class="nav-link dropdown-toggle text-info" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user"></i> {{ user }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li>
+                                    <a class="dropdown-item text-success" href="{{ url_for('profile_bp.profile') }}">
+                                        <i class="fas fa-id-badge"></i> Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{{ url_for('auth_bp.logout') }}">
+                                        <i class="fas fa-sign-out-alt"></i> Logout
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
-                    {% endif %}
-                </ul>
-                
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link text-success" href="/"><i class="fas fa-sign-in-alt"></i> Login</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
             </div>
         </div>
     </nav>
@@ -55,5 +56,8 @@
     <div class="container mt-4">
         {% block content %}{% endblock %}
     </div>
+
+    {% block scripts %}{% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
