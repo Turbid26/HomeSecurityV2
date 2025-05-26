@@ -9,3 +9,5 @@ opencv-python
 face_recognition
 dlib
 requests
+insightface
+onnxruntime-gpu

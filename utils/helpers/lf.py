@@ -1,54 +1,108 @@
-# helpers.py
 import cv2
-import face_recognition
-import urllib.request
 import numpy as np
-from datetime import datetime
+import urllib.request
+from datetime import datetime, timedelta
+import time
+import requests
+
 from utils.cloud_utils import upload_to_cloudinary
 from utils.fb_config import firestore_db
-import time
-from datetime import datetime, timedelta
+
+import insightface
 
 ALERT_INTERVAL = timedelta(seconds=30)
 last_alert_time = datetime.min
 
-camera = cv2.VideoCapture(0)
+ESP32_STREAM_URL = "http://192.168.68.114:81/stream"
+camera = cv2.VideoCapture(ESP32_STREAM_URL)
 
-TARGET_FPS = 10
-FRAME_DURATION = 1.0 / TARGET_FPS
+TELEGRAM_BOT_TOKEN = "7914841129:AAHFGtZ0ZZEmijsKhkU_3Z8Shv0fxXoOw1c"
+TELEGRAM_CHAT_ID = "6825075764"
+TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+
+# TARGET_FPS = 10
+# FRAME_DURATION = 1.0 / TARGET_FPS
+
+# Initialize InsightFace model (FaceAnalysis)
+model = insightface.app.FaceAnalysis(name="buffalo_l", providers=['CPUExecutionProvider'])
+model.prepare(ctx_id=0)  # CPU context
+
+def get_known_face_encodings(user_email):
+    try:
+        user_ref = firestore_db.collection('users').document(user_email)
+        user_doc = user_ref.get()
+        if not user_doc.exists:
+            print(f"No user found for {user_email}")
+            return []
+
+        known_faces = user_doc.to_dict().get("known_faces", [])
+        if not known_faces:
+            print(f"No known faces found for {user_email}")
+            return []
+
+        encodings = []
+        for face in known_faces:
+            url = face.get("url")
+            if not url:
+                continue
+
+            try:
+                resp = urllib.request.urlopen(url)
+                image = np.asarray(bytearray(resp.read()), dtype="uint8")
+                img = cv2.imdecode(image, cv2.IMREAD_COLOR)
+
+                # InsightFace expects BGR images, no need to convert color space here
+                faces = model.get(img)
+                if len(faces) > 0:
+                    # Use embedding of first face found
+                    embedding = faces[0].embedding
+                    encodings.append(embedding)
+            except Exception as e:
+                print(f"Error processing known face URL: {url} — {e}")
+                continue
+
+        return encodings
+
+    except Exception as e:
+        print(f"Error retrieving known faces: {e}")
+        return []
 
 def gen_frames(user_email):
-    ALERT_INTERVAL = timedelta(seconds=30)
-    last_alert_time = datetime.min
+    global last_alert_time
+    global camera
+
     known_face_encodings = get_known_face_encodings(user_email)
 
-    while True:  # Wrap in list to make it mutable
-
+    while True:
         start_time = time.time()
-        success, frame = camera.read()
+        success, frame = read_latest_frame(camera)
         if not success:
-            break
+            print("Frame read failed. Reconnecting...")
+            camera.release()
+            time.sleep(2)
+            camera = cv2.VideoCapture(ESP32_STREAM_URL)
+            continue
 
-        small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
-        rgb_small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
-
-        face_locations = face_recognition.face_locations(rgb_small_frame)
-        face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
+        # Run face detection + recognition on full frame (or resize if needed)
+        faces = model.get(frame)  # returns list of Face objects with bbox and embedding
 
         match_found = False
-        for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
-            matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
-            if any(matches):
-                match_found = True
-                
-                top *= 4
-                right *= 4
-                bottom *= 4
-                left *= 4
 
-                cv2.rectangle(frame, (left, top), (right, bottom), (255, 0, 0), 2)
+        for face in faces:
+            bbox = face.bbox.astype(int)  # [left, top, right, bottom]
+            embedding = face.embedding
 
-        if not match_found and face_encodings:
+            # Compare embedding with known faces (cosine similarity)
+            if known_face_encodings:
+                sims = [np.dot(embedding, known_emb) / (np.linalg.norm(embedding)*np.linalg.norm(known_emb)) for known_emb in known_face_encodings]
+                max_sim = max(sims)
+                threshold = 0.5  # adjust threshold based on accuracy vs recall tradeoff
+                if max_sim > threshold:
+                    match_found = True
+                    left, top, right, bottom = bbox
+                    cv2.rectangle(frame, (left, top), (right, bottom), (255, 0, 0), 2)
+
+        if not match_found and len(faces) > 0:
             now = datetime.utcnow()
             if now - last_alert_time >= ALERT_INTERVAL:
                 _, buffer = cv2.imencode('.jpg', frame)
@@ -83,54 +137,49 @@ def gen_frames(user_email):
                     })
 
                     print(f"Alert added successfully for {user_email}")
-                    last_alert_time = now  # ✅ Update the last alert time
+
+                    message_text = f"🚨 Unknown face detected at {now.isoformat()}! Image URL: {image_url}"
+                    send_telegram_message(message_text)
+
+                    last_alert_time = now
+
+                    last_alert_time = now
 
                 except Exception as e:
                     print(f"Error updating Firestore: {e}")
 
         ret, buffer = cv2.imencode('.jpg', frame)
-        frame = buffer.tobytes()
+        frame_bytes = buffer.tobytes()
         yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
-        elapsed = time.time() - start_time
-        if elapsed < FRAME_DURATION:
-            time.sleep(FRAME_DURATION - elapsed)
+        # elapsed = time.time() - start_time
+        # if elapsed < FRAME_DURATION:
+        #     time.sleep(FRAME_DURATION - elapsed)
 
-def get_known_face_encodings(user_email):
+
+def send_telegram_message(text):
+    data = {
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": text
+    }
     try:
-        # Access Firestore user document
-        user_ref = firestore_db.collection('users').document(user_email)
-        user_doc = user_ref.get()
-
-        if not user_doc.exists:
-            print(f"No user found for {user_email}")
-            return []
-
-        # Get the known_faces field
-        known_faces = user_doc.to_dict().get("known_faces", [])
-        if not known_faces:
-            print(f"No known faces found for {user_email}")
-            return []
-
-        encodings = []
-        for face in known_faces:
-            url = face.get("url")
-            if not url:
-                continue
-
-            try:
-                resp = urllib.request.urlopen(url)
-                image = np.asarray(bytearray(resp.read()), dtype="uint8")
-                img = cv2.imdecode(image, cv2.IMREAD_COLOR)
-                face_encoding = face_recognition.face_encodings(img)
-                if face_encoding:
-                    encodings.append(face_encoding[0])
-            except Exception as e:
-                print(f"Error processing known face URL: {url} — {e}")
-                continue
-
-        return encodings
+        response = requests.post(TELEGRAM_API_URL, data=data)
+        if response.status_code != 200:
+            print(f"Telegram API error: {response.text}")
     except Exception as e:
-        print(f"Error retrieving known faces: {e}")
-        return []
+        print(f"Failed to send Telegram message: {e}")
+
+def read_latest_frame(camera):
+    """
+    Grab and discard all buffered frames, returning only the most recent one.
+    """
+    grabbed = False
+    frame = None
+    while True:
+        ret, temp_frame = camera.read()
+        if not ret:
+            break
+        grabbed = True
+        frame = temp_frame
+    return grabbed, frame
