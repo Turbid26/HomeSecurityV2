@@ -17,4 +17,4 @@ def video_feed():
     if 'user' not in session:
         return redirect(url_for('auth_bp.login'))
     user_email = session['user']
-    return Response(gen_frames(user_email), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(gen_frames(user_email))

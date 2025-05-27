@@ -13,7 +13,7 @@ import insightface
 ALERT_INTERVAL = timedelta(seconds=30)
 last_alert_time = datetime.min
 
-ESP32_STREAM_URL = "http://192.168.68.114:81/stream"
+ESP32_STREAM_URL = "http://192.168.68.107:81/stream"
 camera = cv2.VideoCapture(ESP32_STREAM_URL)
 
 TELEGRAM_BOT_TOKEN = "7914841129:AAHFGtZ0ZZEmijsKhkU_3Z8Shv0fxXoOw1c"
