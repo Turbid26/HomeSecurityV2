@@ -67,12 +67,12 @@ void setup() {
   config.pin_pwdn = PWDN_GPIO_NUM;
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
-  config.frame_size = FRAMESIZE_UXGA;
+  config.frame_size = FRAMESIZE_SXGA;
   config.pixel_format = PIXFORMAT_JPEG;  // for streaming
   //config.pixel_format = PIXFORMAT_RGB565; // for face detection/recognition
-  config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
+  config.grab_mode = CAMERA_GRAB_LATEST;
   config.fb_location = CAMERA_FB_IN_PSRAM;
-  config.jpeg_quality = 12;
+  config.jpeg_quality = 10;
   config.fb_count = 2;
 
   // if PSRAM IC present, init with UXGA resolution and higher JPEG quality
@@ -91,7 +91,7 @@ void setup() {
     // Best option for face detection/recognition
     config.frame_size = FRAMESIZE_240X240;
 #if CONFIG_IDF_TARGET_ESP32S3
-    config.fb_count = 2;
+    config.fb_count = 3;
 #endif
   }
 
@@ -146,9 +146,17 @@ void setup() {
 
   startCameraServer();
 
+  s->set_framesize(s, FRAMESIZE_SXGA);
+  s->set_quality(s, 8);
+  s->set_brightness(s, 1);
+  s->set_saturation(s, -11);
+
   Serial.print("Camera Ready! Use 'http://");
   Serial.print(WiFi.localIP());
   Serial.println("' to connect");
+
+  Serial.printf("Grab mode: %d, FB count: %d\n", config.grab_mode, config.fb_count);
+
 }
 
 void loop() {

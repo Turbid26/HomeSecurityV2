@@ -48,7 +48,6 @@ def gen_frames(user_email):
         for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
             matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
             if any(matches):
-                print("inside")
                 match_found = True
 
                 top *= 4
