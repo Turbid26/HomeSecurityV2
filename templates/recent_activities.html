@@ -10,23 +10,60 @@
 <div class="activity-container">
   <h1 class="activity-header">Recent Activity</h1>
 
-  {% if faces %}
-    {% for face in faces %}
-      <div class="activity-card">
-        <img src="{{ face.image_url }}" alt="Face" class="activity-image">
-        <div class="activity-details">
-          <h5>{{ face.label or "Unknown Face" }}</h5>
-          <p>Picture taken at {{ face.timestamp }}</p>
-          <button class="mark-button">Mark as Known</button>
+  <!-- Filter Buttons -->
+  <div class="filter-buttons mb-3">
+    <button class="btn btn-outline-primary filter-btn" data-type="all">All</button>
+    <button class="btn btn-outline-success filter-btn" data-type="image">Images</button>
+    <button class="btn btn-outline-danger filter-btn" data-type="video">Videos</button>
+  </div>
+
+  <div id="activity-list">
+    {% if faces %}
+      {% for face in faces %}
+        {% set is_video = face.image_url.endswith('.mp4') or face.image_url.endswith('.webm') or 'video/upload' in face.image_url %}
+        <div class="activity-card" data-type="{{ 'video' if is_video else 'image' }}">
+          {% if is_video %}
+            <video controls class="activity-image">
+              <source src="{{ face.image_url }}" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          {% else %}
+            <img src="{{ face.image_url }}" alt="Face" class="activity-image">
+          {% endif %}
+          <div class="activity-details">
+            <h5>{{ face.label or "Unknown Face" }}</h5>
+            <p>Captured at {{ face.timestamp }}</p>
+            {% if not is_video %}
+              <button class="mark-button">Mark as Known</button>
+            {% endif %}
+          </div>
         </div>
-      </div>
-    {% endfor %}
-  {% else %}
-    <p>No recent alerts.</p>
-  {% endif %}
+      {% endfor %}
+    {% else %}
+      <p>No recent alerts.</p>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<!-- JS if needed -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const buttons = document.querySelectorAll('.filter-btn');
+    const cards = document.querySelectorAll('.activity-card');
+
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        const type = button.dataset.type;
+        cards.forEach(card => {
+          if (type === 'all' || card.dataset.type === type) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+  });
+</script>
 {% endblock %}

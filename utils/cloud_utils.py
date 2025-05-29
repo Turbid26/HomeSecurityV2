@@ -2,6 +2,7 @@ import cloudinary
 import cloudinary.uploader
 import re
 from datetime import datetime
+import cv2
 
 cloudinary.config(
     cloud_name="duhho2j3z",
@@ -39,3 +40,17 @@ def extract_id_from_url(url):
     if match:
         return match.group(1)
     return None
+
+
+def upload_video_to_cloudinary(video_path, name="recording", folder="HomeSec/Alerted/"):
+    try:
+        result = cloudinary.uploader.upload_large(
+            video_path,
+            resource_type="video",
+            public_id=f"{folder}{name}",
+            overwrite=True
+        )
+        return result.get("secure_url")
+    except Exception as e:
+        print(f"[ERROR] Cloudinary video upload failed: {e}")
+        return None

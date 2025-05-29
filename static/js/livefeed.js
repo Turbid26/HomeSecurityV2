@@ -21,3 +21,39 @@
 // }
 
 // setInterval(fetchLiveData, 3000);
+
+document.addEventListener('DOMContentLoaded', () => {
+    const startBtn = document.getElementById('startRecording');
+    const stopBtn = document.getElementById('stopRecording');
+
+    // Prevent duplicate binding
+    if (startBtn && !startBtn.dataset.bound) {
+        startBtn.dataset.bound = true;
+        startBtn.addEventListener('click', () => {
+            fetch('/start_recording', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log("[DEBUG] Start recording response:", data);
+                alert(data.status);
+            });
+        });
+    }
+
+    if (stopBtn && !stopBtn.dataset.bound) {
+        stopBtn.dataset.bound = true;
+        stopBtn.addEventListener('click', () => {
+            fetch('/stop_recording', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log("[DEBUG] Stop recording response:", data);
+                alert(data.status);
+            });
+        });
+    }
+});
