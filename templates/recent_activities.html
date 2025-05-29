@@ -21,16 +21,17 @@
     {% if faces %}
       {% for face in faces %}
         {% set is_video = face.image_url.endswith('.mp4') or face.image_url.endswith('.webm') or 'video/upload' in face.image_url %}
-        <div class="activity-card" data-type="{{ 'video' if is_video else 'image' }}">
+        <div class="activity-card d-flex" data-type="{{ 'video' if is_video else 'image' }}">
           {% if is_video %}
-            <video controls class="activity-image">
-              <source src="{{ face.image_url }}" type="video/mp4">
-              Your browser does not support the video tag.
+            <video controls download class="activity-media">
+              <a href="{{ face.image_url }}" download class="activity-media">
+                Download .AVI Video
+              </a>
             </video>
           {% else %}
-            <img src="{{ face.image_url }}" alt="Face" class="activity-image">
+            <img src="{{ face.image_url }}" alt="Face" class="activity-media">
           {% endif %}
-          <div class="activity-details">
+          <div class="activity-details ms-3">
             <h5>{{ face.label or "Unknown Face" }}</h5>
             <p>Captured at {{ face.timestamp }}</p>
             {% if not is_video %}
@@ -49,21 +50,21 @@
 {% block scripts %}
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const buttons = document.querySelectorAll('.filter-btn');
-    const cards = document.querySelectorAll('.activity-card');
+  const buttons = document.querySelectorAll('.filter-btn');
+  const cards = document.querySelectorAll('.activity-card');
 
-    buttons.forEach(button => {
-      button.addEventListener('click', () => {
-        const type = button.dataset.type;
-        cards.forEach(card => {
-          if (type === 'all' || card.dataset.type === type) {
-            card.style.display = 'block';
-          } else {
-            card.style.display = 'none';
-          }
-        });
+  buttons.forEach(button => {
+    button.addEventListener('click', () => {
+      const type = button.dataset.type;
+      cards.forEach(card => {
+        if (type === 'all' || card.dataset.type === type) {
+          card.classList.remove('d-none');
+        } else {
+          card.classList.add('d-none');
+        }
       });
     });
   });
+});
 </script>
 {% endblock %}
